@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dokumentasi & Evaluasi Siswa Madani</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#F1F5F9;min-height:100vh;color:#1e293b}
+  .app{display:flex;min-height:100vh}
+
+  /* Sidebar */
+  .sidebar{width:220px;background:#fff;border-right:1px solid #e2e8f0;padding:1.5rem 1rem;display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0;position:sticky;top:0;height:100vh}
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #e2e8f0}
+  .logo-icon{width:38px;height:38px;background:#185FA5;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+  .logo-text{font-weight:600;font-size:15px;color:#1e293b}
+  .logo-sub{font-size:11px;color:#64748b}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:#64748b;transition:all .15s;text-decoration:none}
+  .nav-item:hover{background:#F1F5F9;color:#1e293b}
+  .nav-item.active{background:#EFF6FF;color:#185FA5;font-weight:500}
+  .nav-item i{font-size:18px}
+  .nav-item.disabled{opacity:.4;pointer-events:none}
+  .sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid #e2e8f0}
+  .admin-info{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px}
+  .admin-avatar{width:32px;height:32px;background:#BFDBFE;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#1D4ED8;flex-shrink:0}
+  .admin-name{font-size:13px;font-weight:500;color:#1e293b}
+  .admin-email{font-size:11px;color:#64748b}
+
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+  .page-title{font-size:18px;font-weight:600;color:#1e293b}
+  .page-sub{font-size:13px;color:#64748b;margin-top:2px}
+  .topbar-actions{display:flex;align-items:center;gap:8px}
+
+  /* Buttons */
+  .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid #cbd5e1;background:#fff;color:#1e293b;transition:all .15s}
+  .btn:hover{background:#F1F5F9}
+  .btn-primary{background:#185FA5;color:#fff;border-color:#185FA5}
+  .btn-primary:hover{background:#1251886}
+  .btn-success{background:#16A34A;color:#fff;border-color:#16A34A}
+  .btn-success:hover{background:#15803D}
+  .btn-danger{background:#FEE2E2;color:#DC2626;border-color:#FECACA}
+  .btn-danger:hover{background:#FECACA}
+
+  /* Content */
+  .content{flex:1;overflow-y:auto;padding:1.5rem}
+  .page{display:none}
+  .page.active{display:block}
+
+  /* Students grid */
+  .students-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1rem;margin-top:1rem}
+  .student-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;cursor:pointer;transition:all .15s;position:relative}
+  .student-card:hover{border-color:#93C5FD;box-shadow:0 0 0 3px rgba(24,95,165,0.08)}
+  .student-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;margin-bottom:10px}
+  .student-name{font-size:15px;font-weight:600;color:#1e293b}
+  .student-kelas{font-size:12px;color:#64748b;margin-top:3px}
+  .student-meta{font-size:12px;color:#94a3b8;margin-top:6px}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EFF6FF;color:#185FA5;margin-top:8px}
+  .delete-btn{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;background:#FEE2E2;color:#DC2626;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;opacity:0;transition:opacity .15s}
+  .student-card:hover .delete-btn{opacity:1}
+  .add-card{background:#F8FAFC;border:1.5px dashed #CBD5E1;border-radius:12px;padding:1.25rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:148px;transition:all .15s}
+  .add-card:hover{border-color:#185FA5;background:#EFF6FF}
+  .add-card:hover i,.add-card:hover span{color:#185FA5}
+  .add-card i{font-size:28px;color:#94a3b8}
+  .add-card span{font-size:13px;color:#64748b}
+
+  /* Detail */
+  .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#64748b;cursor:pointer;margin-bottom:1rem}
+  .back-btn:hover{color:#185FA5}
+  .detail-header{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .detail-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex-shrink:0}
+  .detail-info{flex:1}
+  .detail-name{font-size:18px;font-weight:600;color:#1e293b}
+  .detail-kelas{font-size:13px;color:#64748b;margin-top:2px}
+  .detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* Pertemuan */
+  .pertemuan-list{display:flex;flex-direction:column;gap:1rem}
+  .pertemuan-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}
+  .pertemuan-header{padding:10px 1.25rem;background:#F8FAFC;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+  .pertemuan-label{font-size:13px;font-weight:500;color:#185FA5;display:flex;align-items:center;gap:6px}
+  .pertemuan-body{padding:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .col-label{font-size:12px;color:#64748b;display:flex;align-items:center;gap:5px;margin-bottom:6px}
+  .col-label i{font-size:14px}
+
+  /* Upload */
+  .upload-zone{border:1.5px dashed #CBD5E1;border-radius:8px;padding:1rem;text-align:center;cursor:pointer;position:relative;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#F8FAFC;transition:all .15s}
+  .upload-zone:hover{border-color:#185FA5;background:#EFF6FF}
+  .upload-zone i{font-size:24px;color:#94a3b8}
+  .upload-zone span{font-size:12px;color:#64748b}
+  .upload-zone small{font-size:11px;color:#94a3b8}
+  .upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .preview-wrap{position:relative;width:100%;height:130px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
+  .preview-wrap img{width:100%;height:100%;object-fit:cover}
+  .preview-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(0,0,0,0.55);border:none;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px}
+  .ganti-btn{display:flex;align-items:center;gap:5px;margin-top:6px;background:#F1F5F9;border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:11px;color:#64748b;cursor:pointer;position:relative;overflow:hidden;width:100%;justify-content:center}
+  .ganti-btn input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .keterangan-col{display:flex;flex-direction:column}
+  textarea{width:100%;height:130px;resize:vertical;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Segoe UI',sans-serif;color:#1e293b;background:#fff;outline:none;transition:border .15s;line-height:1.5}
+  textarea:focus{border-color:#185FA5}
+  .status-terisi{font-size:11px;background:#DCFCE7;color:#16A34A;padding:2px 10px;border-radius:20px;font-weight:500}
+  .status-kosong{font-size:11px;background:#F1F5F9;color:#94a3b8;padding:2px 10px;border-radius:20px}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:100}
+  .modal{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:1.5rem;width:380px;max-width:92vw}
+  .modal-title{font-size:16px;font-weight:600;color:#1e293b;margin-bottom:1.25rem}
+  .form-group{margin-bottom:1rem}
+  .form-label{font-size:13px;color:#64748b;margin-bottom:5px;display:block;font-weight:500}
+  .form-input{width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:14px;font-family:'Segoe UI',sans-serif;color:#1e293b;background:#fff;outline:none;transition:border .15s}
+  .form-input:focus{border-color:#185FA5}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+
+  /* Toast */
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#185FA5;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:200;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(24,95,165,.3)}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  /* Empty state */
+  .empty-state{text-align:center;padding:3rem 1rem;color:#64748b}
+  .empty-state i{font-size:40px;color:#CBD5E1;display:block;margin-bottom:1rem}
+  .empty-state p{font-size:14px;line-height:1.6}
+
+  @media(max-width:640px){
+    .pertemuan-body{grid-template-columns:1fr}
+    .students-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+    .sidebar{display:none}
+    .detail-header{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-school"></i></div>
+      <div>
+        <div class="logo-text">Madani</div>
+        <div class="logo-sub">Bimbel Madani</div>
+      </div>
+    </div>
+    <div class="nav-item active" id="nav-siswa"><i class="ti ti-users"></i> Siswa</div>
+    <div class="nav-item disabled"><i class="ti ti-layout-dashboard"></i> Beranda</div>
+    <div class="nav-item disabled"><i class="ti ti-camera"></i> Dokumentasi</div>
+    <div class="nav-item disabled"><i class="ti ti-clipboard-list"></i> Evaluasi</div>
+    <div class="nav-item disabled"><i class="ti ti-chart-bar"></i> Laporan</div>
+    <div class="nav-item disabled"><i class="ti ti-settings"></i> Pengaturan</div>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar">AM</div>
+        <div>
+          <div class="admin-name">Admin Madani</div>
+          <div class="admin-email">admin@madani.id</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="topbar-title">Data Siswa</div>
+        <div class="page-sub" id="topbar-sub">Kelola dan dokumentasi perkembangan siswa</div>
+      </div>
+      <div class="topbar-actions" id="topbar-actions">
+        <button class="btn btn-primary" onclick="openAddModal()"><i class="ti ti-plus"></i> Tambah Siswa</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Halaman Daftar Siswa -->
+      <div class="page active" id="page-siswa">
+        <div class="students-grid" id="students-grid"></div>
+      </div>
+
+      <!-- Halaman Detail Siswa -->
+      <div class="page" id="page-detail">
+        <div class="back-btn" onclick="backToList()"><i class="ti ti-arrow-left"></i> Kembali ke daftar siswa</div>
+        <div class="detail-header">
+          <div class="detail-avatar" id="detail-avatar"></div>
+          <div class="detail-info">
+            <div class="detail-name" id="detail-name"></div>
+            <div class="detail-kelas" id="detail-kelas"></div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn btn-primary" onclick="saveData()"><i class="ti ti-device-floppy"></i> Simpan Data</button>
+            <button class="btn btn-success" onclick="exportPDF()"><i class="ti ti-file-export"></i> Export PDF</button>
+          </div>
+        </div>
+        <div class="pertemuan-list" id="pertemuan-list"></div>
+        <div style="margin-top:1.5rem;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-primary" onclick="saveData()"><i class="ti ti-device-floppy"></i> Simpan Data</button>
+          <button class="btn btn-success" onclick="exportPDF()"><i class="ti ti-file-export"></i> Export PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah Siswa -->
+<div class="modal-bg" id="add-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Tambah Siswa Baru</div>
+    <div class="form-group">
+      <label class="form-label">Nama Siswa <span style="color:#DC2626">*</span></label>
+      <input class="form-input" id="input-nama" placeholder="Masukkan nama lengkap siswa" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kelas / Program</label>
+      <select class="form-input" id="input-kelas">
+        <option value="">— Pilih kelas —</option>
+        <option>Ngaji</option>
+        <option>Tahfidz</option>
+        <option>Bahasa Arab</option>
+        <option>Matematika</option>
+        <option>IPA</option>
+        <option>IPS</option>
+        <option>Bahasa Inggris</option>
+        <option>Umum</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Jumlah Pertemuan</label>
+      <select class="form-input" id="input-pertemuan">
+        <option value="5">5 pertemuan</option>
+        <option value="10">10 pertemuan</option>
+        <option value="15">15 pertemuan</option>
+        <option value="20" selected>20 pertemuan</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="addStudent()"><i class="ti ti-plus"></i> Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifikasi -->
+<div class="toast" id="toast"><i class="ti ti-check"></i> <span id="toast-msg"></span></div>
+
+<script>
+  let students = [];
+  let currentStudent = null;
+  let pertemuanData = {};
+
+  // ========== STORAGE ==========
+  function loadFromStorage() {
+    try {
+      const s = localStorage.getItem('madani_students');
+      if (s) students = JSON.parse(s);
+      const p = localStorage.getItem('madani_pertemuan');
+      if (p) pertemuanData = JSON.parse(p);
+    } catch(e) { console.warn('Storage error:', e); }
+  }
+
+  function saveToStorage() {
+    localStorage.setItem('madani_students', JSON.stringify(students));
+    localStorage.setItem('madani_pertemuan', JSON.stringify(pertemuanData));
+  }
+
+  // ========== HELPERS ==========
+  function getInitials(name) {
+    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  function getColor(kelas) {
+    const map = {
+      'Ngaji': { bg: '#DBEAFE', text: '#1D4ED8' },
+      'Tahfidz': { bg: '#DCFCE7', text: '#16A34A' },
+      'Bahasa Arab': { bg: '#FEE2E2', text: '#DC2626' },
+      'Matematika': { bg: '#EDE9FE', text: '#7C3AED' },
+      'IPA': { bg: '#CCFBF1', text: '#0D9488' },
+      'IPS': { bg: '#FEF3C7', text: '#D97706' },
+      'Bahasa Inggris': { bg: '#FCE7F3', text: '#DB2777' },
+      'Umum': { bg: '#F1F5F9', text: '#475569' },
+    };
+    return map[kelas] || { bg: '#F1F5F9', text: '#475569' };
+  }
+
+  // ========== RENDER DAFTAR SISWA ==========
+  function renderStudents() {
+    const grid = document.getElementById('students-grid');
+    grid.innerHTML = '';
+
+    if (students.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <i class="ti ti-users"></i>
+          <p>Belum ada data siswa.<br>Klik "Tambah Siswa" untuk mulai.</p>
+        </div>`;
+    }
+
+    students.forEach((s, i) => {
+      const color = getColor(s.kelas);
+      const ptData = pertemuanData[s.id] || {};
+      const filled = Object.values(ptData).filter(p => p.keterangan || p.foto).length;
+      const card = document.createElement('div');
+      card.className = 'student-card';
+      card.innerHTML = `
+        <button class="delete-btn" onclick="deleteStudent(event,${i})" title="Hapus siswa"><i class="ti ti-x"></i></button>
+        <div class="student-avatar" style="background:${color.bg};color:${color.text}">${getInitials(s.nama)}</div>
+        <div class="student-name">${s.nama}</div>
+        <div class="student-kelas"><i class="ti ti-building" style="font-size:12px;vertical-align:-1px"></i> ${s.kelas || '—'}</div>
+        <div class="student-meta"><i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px"></i> ${s.pertemuan} pertemuan</div>
+        <div class="badge"><i class="ti ti-clipboard-check" style="font-size:11px"></i> ${filled} terisi</div>
+      `;
+      card.addEventListener('click', e => { if (!e.target.closest('.delete-btn')) openDetail(i); });
+      grid.appendChild(card);
+    });
+
+    // Tombol tambah
+    const addCard = document.createElement('div');
+    addCard.className = 'add-card';
+    addCard.onclick = openAddModal;
+    addCard.innerHTML = '<i class="ti ti-plus"></i><span>Tambah Siswa</span>';
+    grid.appendChild(addCard);
+  }
+
+  // ========== DETAIL SISWA ==========
+  function openDetail(idx) {
+    currentStudent = idx;
+    const s = students[idx];
+    const color = getColor(s.kelas);
+
+    const av = document.getElementById('detail-avatar');
+    av.textContent = getInitials(s.nama);
+    av.style.cssText = `background:${color.bg};color:${color.text};width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex-shrink:0`;
+
+    document.getElementById('detail-name').textContent = s.nama;
+    document.getElementById('detail-kelas').textContent = `${s.kelas || '—'} · ${s.pertemuan} pertemuan`;
+    document.getElementById('topbar-title').textContent = `Detail: ${s.nama}`;
+    document.getElementById('topbar-sub').textContent = 'Dokumentasi & evaluasi per pertemuan';
+    document.getElementById('topbar-actions').innerHTML = '';
+
+    renderPertemuan(s);
+    document.getElementById('page-siswa').classList.remove('active');
+    document.getElementById('page-detail').classList.add('active');
+  }
+
+  // ========== RENDER PERTEMUAN ==========
+  function renderPertemuan(s) {
+    const list = document.getElementById('pertemuan-list');
+    list.innerHTML = '';
+    const ptData = pertemuanData[s.id] || {};
+
+    for (let i = 1; i <= s.pertemuan; i++) {
+      const pd = ptData[i] || {};
+      const isisi = pd.keterangan || pd.foto;
+      const card = document.createElement('div');
+      card.className = 'pertemuan-card';
+      card.innerHTML = `
+        <div class="pertemuan-header">
+          <div class="pertemuan-label"><i class="ti ti-calendar-event" style="font-size:15px"></i> Pertemuan ${i}</div>
+          ${isisi
+            ? '<span class="status-terisi"><i class="ti ti-check" style="font-size:11px"></i> Terisi</span>'
+            : '<span class="status-kosong">Kosong</span>'}
+        </div>
+        <div class="pertemuan-body">
+          <div>
+            <div class="col-label"><i class="ti ti-camera"></i> Foto / Video</div>
+            <div id="foto-area-${i}"></div>
+          </div>
+          <div class="keterangan-col">
+            <div class="col-label"><i class="ti ti-notes"></i> Keterangan</div>
+            <textarea id="ket-${i}" placeholder="Tuliskan catatan perkembangan siswa pada pertemuan ini...">${pd.keterangan || ''}</textarea>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+      renderFotoArea(i, pd.foto || null);
+    }
+  }
+
+  // ========== FOTO AREA ==========
+  function renderFotoArea(num, fotoData) {
+    const area = document.getElementById(`foto-area-${num}`);
+    if (!area) return;
+    if (fotoData) {
+      area.innerHTML = `
+        <div class="preview-wrap">
+          <img src="${fotoData}" alt="Foto pertemuan ${num}" />
+          <button class="preview-remove" onclick="removePhoto(${num})" title="Hapus foto"><i class="ti ti-x" style="font-size:12px"></i></button>
+        </div>
+        <label class="ganti-btn">
+          <i class="ti ti-upload" style="font-size:13px"></i> Ganti foto
+          <input type="file" accept="image/*" onchange="handleFile(event,${num})" />
+        </label>`;
+    } else {
+      area.innerHTML = `
+        <label class="upload-zone">
+          <i class="ti ti-upload"></i>
+          <span>Upload Foto / Video</span>
+          <small>PNG, JPG, MP4 maks. 20MB</small>
+          <input type="file" accept="image/*,video/*" onchange="handleFile(event,${num})" />
+        </label>`;
+    }
+  }
+
+  function handleFile(e, num) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { showToast('File terlalu besar! Maks. 20MB'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const sid = students[currentStudent].id;
+      if (!pertemuanData[sid]) pertemuanData[sid] = {};
+      if (!pertemuanData[sid][num]) pertemuanData[sid][num] = {};
+      pertemuanData[sid][num].foto = ev.target.result;
+      renderFotoArea(num, ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removePhoto(num) {
+    const sid = students[currentStudent].id;
+    if (pertemuanData[sid]?.[num]) pertemuanData[sid][num].foto = null;
+    renderFotoArea(num, null);
+  }
+
+  // ========== SIMPAN DATA ==========
+  function saveData() {
+    const s = students[currentStudent];
+    if (!pertemuanData[s.id]) pertemuanData[s.id] = {};
+    for (let i = 1; i <= s.pertemuan; i++) {
+      const ket = document.getElementById(`ket-${i}`)?.value || '';
+      if (!pertemuanData[s.id][i]) pertemuanData[s.id][i] = {};
+      pertemuanData[s.id][i].keterangan = ket;
+    }
+    saveToStorage();
+    renderPertemuan(s); // refresh status badge
+    showToast('Data berhasil disimpan!');
+  }
+
+  // ========== EXPORT PDF ==========
+  async function exportPDF() {
+    saveData();
+    const s = students[currentStudent];
+    const ptData = pertemuanData[s.id] || {};
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, margin = 18;
+    let y = margin;
+
+    // Header
+    doc.setFillColor(24, 95, 165);
+    doc.rect(0, 0, W, 34, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16); doc.setFont(undefined, 'bold');
+    doc.text('Dokumentasi & Evaluasi Siswa', margin, 14);
+    doc.setFontSize(10); doc.setFont(undefined, 'normal');
+    doc.text('Bimbingan Belajar Madani', margin, 22);
+    const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+    doc.text(`Dicetak: ${today}`, W - margin, 22, { align: 'right' });
+    y = 44;
+
+    // Info siswa
+    doc.setTextColor(30, 30, 30);
+    doc.setFillColor(239, 246, 255);
+    doc.rect(margin, y, W - 2 * margin, 20, 'F');
+    doc.setFontSize(13); doc.setFont(undefined, 'bold');
+    doc.text(s.nama, margin + 6, y + 8);
+    doc.setFontSize(10); doc.setFont(undefined, 'normal');
+    doc.text(`Kelas/Program: ${s.kelas || '—'}`, margin + 6, y + 15);
+    y += 28;
+
+    // Pertemuan
+    for (let i = 1; i <= s.pertemuan; i++) {
+      const pd = ptData[i] || {};
+      if (!pd.keterangan && !pd.foto) continue;
+
+      if (y > 250) { doc.addPage(); y = margin; }
+
+      // Header pertemuan
+      doc.setFillColor(240, 244, 248);
+      doc.rect(margin, y, W - 2 * margin, 8, 'F');
+      doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.setTextColor(24, 95, 165);
+      doc.text(`Pertemuan ${i}`, margin + 3, y + 6);
+      y += 11;
+      doc.setTextColor(30, 30, 30); doc.setFont(undefined, 'normal'); doc.setFontSize(9);
+
+      const hasFoto = pd.foto && pd.foto.startsWith('data:image');
+      const hasKet = pd.keterangan && pd.keterangan.trim();
+
+      if (hasFoto && hasKet) {
+        try {
+          const imgType = pd.foto.includes('png') ? 'PNG' : 'JPEG';
+          doc.addImage(pd.foto, imgType, margin, y, 58, 42);
+          const lines = doc.splitTextToSize(pd.keterangan, W - margin - 58 - 12);
+          doc.text(lines, margin + 62, y + 5);
+          y += 46;
+        } catch(e) {
+          const lines = doc.splitTextToSize(pd.keterangan, W - 2 * margin);
+          doc.text(lines, margin, y + 4);
+          y += lines.length * 5 + 4;
+        }
+      } else if (hasFoto) {
+        try {
+          const imgType = pd.foto.includes('png') ? 'PNG' : 'JPEG';
+          doc.addImage(pd.foto, imgType, margin, y, 80, 55);
+          y += 59;
+        } catch(e) {}
+      } else if (hasKet) {
+        const lines = doc.splitTextToSize(pd.keterangan, W - 2 * margin);
+        doc.text(lines, margin, y + 4);
+        y += lines.length * 5 + 6;
+      }
+
+      doc.setDrawColor(226, 232, 240);
+      doc.line(margin, y, W - margin, y);
+      y += 6;
+    }
+
+    doc.save(`Evaluasi_${s.nama.replace(/\s+/g, '_')}.pdf`);
+    showToast('PDF berhasil diexport!');
+  }
+
+  // ========== NAVIGASI ==========
+  function backToList() {
+    document.getElementById('page-detail').classList.remove('active');
+    document.getElementById('page-siswa').classList.add('active');
+    document.getElementById('topbar-title').textContent = 'Data Siswa';
+    document.getElementById('topbar-sub').textContent = 'Kelola dan dokumentasi perkembangan siswa';
+    document.getElementById('topbar-actions').innerHTML = '<button class="btn btn-primary" onclick="openAddModal()"><i class="ti ti-plus"></i> Tambah Siswa</button>';
+    renderStudents();
+  }
+
+  // ========== MODAL ==========
+  function openAddModal() {
+    document.getElementById('add-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('input-nama').focus(), 50);
+  }
+  function closeModal() {
+    document.getElementById('add-modal').style.display = 'none';
+    document.getElementById('input-nama').value = '';
+    document.getElementById('input-kelas').value = '';
+    document.getElementById('input-pertemuan').value = '20';
+  }
+
+  function addStudent() {
+    const nama = document.getElementById('input-nama').value.trim();
+    const kelas = document.getElementById('input-kelas').value;
+    const pertemuan = parseInt(document.getElementById('input-pertemuan').value);
+    if (!nama) { showToast('Nama siswa wajib diisi!'); return; }
+    students.push({ id: Date.now().toString(), nama, kelas, pertemuan });
+    saveToStorage();
+    closeModal();
+    renderStudents();
+    showToast(`Siswa ${nama} berhasil ditambahkan!`);
+  }
+
+  function deleteStudent(e, idx) {
+    e.stopPropagation();
+    const s = students[idx];
+    if (!confirm(`Hapus data siswa "${s.nama}"? Semua data pertemuan akan ikut terhapus.`)) return;
+    delete pertemuanData[s.id];
+    students.splice(idx, 1);
+    saveToStorage();
+    renderStudents();
+    showToast('Data siswa berhasil dihapus.');
+  }
+
+  // ========== TOAST ==========
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ========== EVENT LISTENERS ==========
+  document.getElementById('add-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.getElementById('input-nama').addEventListener('keydown', e => { if (e.key === 'Enter') addStudent(); });
+
+  // ========== INIT ==========
+  loadFromStorage();
+  renderStudents();
+</script>
+</body>
+</html>
