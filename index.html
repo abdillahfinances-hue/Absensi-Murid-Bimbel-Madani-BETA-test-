@@ -140,7 +140,6 @@
       <div class="logo-icon"><i class="ti ti-school"></i></div>
       <div>
         <div class="logo-text">Madani</div>
-        
         <div class="logo-sub">Bimbel Madani</div>
       </div>
     </div>
@@ -227,6 +226,10 @@
       <input class="form-input" id="input-tentor" placeholder="Masukkan nama tentor pengajar" />
     </div>
     <div class="form-group">
+      <label class="form-label">Lokasi Mengajar</label>
+      <input class="form-input" id="input-lokasi" placeholder="Contoh: Rumah siswa / Kantor Madani" />
+    </div>
+    <div class="form-group">
       <label class="form-label">Jumlah Pertemuan</label>
       <select class="form-input" id="input-pertemuan">
         <option value="16">16 pertemuan</option>
@@ -304,6 +307,7 @@
         <div class="student-name">${s.nama}</div>
         <div class="student-kelas"><i class="ti ti-building" style="font-size:12px;vertical-align:-1px"></i> ${s.kelas || '—'}</div>
         <div class="student-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px"></i> ${s.tentor || 'Belum ada tentor'}</div>
+        <div class="student-meta"><i class="ti ti-map-pin" style="font-size:12px;vertical-align:-1px"></i> ${s.lokasi || 'Belum ada lokasi'}</div>
         <div class="student-meta"><i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px"></i> ${s.pertemuan} pertemuan</div>
         <div class="badge"><i class="ti ti-clipboard-check" style="font-size:11px"></i> ${filled} terisi</div>
       `;
@@ -330,7 +334,7 @@
     av.style.cssText = `background:${color.bg};color:${color.text};width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex-shrink:0`;
 
     document.getElementById('detail-name').textContent = s.nama;
-    document.getElementById('detail-kelas').textContent = `${s.kelas || '—'} · Tentor: ${s.tentor || '—'} · ${s.pertemuan} pertemuan`;
+    document.getElementById('detail-kelas').textContent = `${s.kelas || '—'} · Tentor: ${s.tentor || '—'} · Lokasi: ${s.lokasi || '—'} · ${s.pertemuan} pertemuan`;
     document.getElementById('topbar-title').textContent = `Detail: ${s.nama}`;
     document.getElementById('topbar-sub').textContent = 'Dokumentasi & evaluasi per pertemuan';
     document.getElementById('topbar-actions').innerHTML = '';
@@ -459,13 +463,14 @@
     // Info siswa
     doc.setTextColor(30, 30, 30);
     doc.setFillColor(239, 246, 255);
-    doc.rect(margin, y, W - 2 * margin, 26, 'F');
+    doc.rect(margin, y, W - 2 * margin, 32, 'F');
     doc.setFontSize(13); doc.setFont(undefined, 'bold');
     doc.text(s.nama, margin + 6, y + 8);
     doc.setFontSize(10); doc.setFont(undefined, 'normal');
     doc.text(`Kelas/Program: ${s.kelas || '—'}`, margin + 6, y + 16);
     doc.text(`Tentor: ${s.tentor || '—'}`, margin + 6, y + 22);
-    y += 34;
+    doc.text(`Lokasi Mengajar: ${s.lokasi || '—'}`, margin + 6, y + 28);
+    y += 40;
 
     // Pertemuan
     for (let i = 1; i <= s.pertemuan; i++) {
@@ -538,6 +543,7 @@
     document.getElementById('input-nama').value = '';
     document.getElementById('input-kelas').value = '';
     document.getElementById('input-tentor').value = '';
+    document.getElementById('input-lokasi').value = '';
     document.getElementById('input-pertemuan').value = '20';
   }
 
@@ -545,9 +551,10 @@
     const nama = document.getElementById('input-nama').value.trim();
     const kelas = document.getElementById('input-kelas').value;
     const tentor = document.getElementById('input-tentor').value.trim();
+    const lokasi = document.getElementById('input-lokasi').value.trim();
     const pertemuan = parseInt(document.getElementById('input-pertemuan').value);
     if (!nama) { showToast('Nama siswa wajib diisi!'); return; }
-    students.push({ id: Date.now().toString(), nama, kelas, tentor, pertemuan });
+    students.push({ id: Date.now().toString(), nama, kelas, tentor, lokasi, pertemuan });
     saveToStorage();
     closeModal();
     renderStudents();
