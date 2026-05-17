@@ -140,6 +140,7 @@
       <div class="logo-icon"><i class="ti ti-school"></i></div>
       <div>
         <div class="logo-text">Madani</div>
+        
         <div class="logo-sub">Bimbel Madani</div>
       </div>
     </div>
@@ -214,22 +215,21 @@
       <label class="form-label">Kelas / Program</label>
       <select class="form-input" id="input-kelas">
         <option value="">— Pilih kelas —</option>
-        <option>Ngaji</option>
-        <option>Tahfidz</option>
-        <option>Bahasa Arab</option>
-        <option>Matematika</option>
-        <option>IPA</option>
-        <option>IPS</option>
-        <option>Bahasa Inggris</option>
-        <option>Umum</option>
+        <option>Madani Child</option>
+        <option>Kelas Menengah</option>
+        <option>Kelas Utama</option>
+        <option>Kelas MPI</option>
+        <option>Kelas BBI</option>
       </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nama Tentor</label>
+      <input class="form-input" id="input-tentor" placeholder="Masukkan nama tentor pengajar" />
     </div>
     <div class="form-group">
       <label class="form-label">Jumlah Pertemuan</label>
       <select class="form-input" id="input-pertemuan">
-        <option value="5">5 pertemuan</option>
-        <option value="10">10 pertemuan</option>
-        <option value="15">15 pertemuan</option>
+        <option value="16">16 pertemuan</option>
         <option value="20" selected>20 pertemuan</option>
       </select>
     </div>
@@ -270,14 +270,11 @@
 
   function getColor(kelas) {
     const map = {
-      'Ngaji': { bg: '#DBEAFE', text: '#1D4ED8' },
-      'Tahfidz': { bg: '#DCFCE7', text: '#16A34A' },
-      'Bahasa Arab': { bg: '#FEE2E2', text: '#DC2626' },
-      'Matematika': { bg: '#EDE9FE', text: '#7C3AED' },
-      'IPA': { bg: '#CCFBF1', text: '#0D9488' },
-      'IPS': { bg: '#FEF3C7', text: '#D97706' },
-      'Bahasa Inggris': { bg: '#FCE7F3', text: '#DB2777' },
-      'Umum': { bg: '#F1F5F9', text: '#475569' },
+      'Madani Child':   { bg: '#DBEAFE', text: '#1D4ED8' },
+      'Kelas Menengah': { bg: '#DCFCE7', text: '#16A34A' },
+      'Kelas Utama':    { bg: '#EDE9FE', text: '#7C3AED' },
+      'Kelas MPI':      { bg: '#CCFBF1', text: '#0D9488' },
+      'Kelas BBI':      { bg: '#FCE7F3', text: '#DB2777' },
     };
     return map[kelas] || { bg: '#F1F5F9', text: '#475569' };
   }
@@ -306,6 +303,7 @@
         <div class="student-avatar" style="background:${color.bg};color:${color.text}">${getInitials(s.nama)}</div>
         <div class="student-name">${s.nama}</div>
         <div class="student-kelas"><i class="ti ti-building" style="font-size:12px;vertical-align:-1px"></i> ${s.kelas || '—'}</div>
+        <div class="student-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px"></i> ${s.tentor || 'Belum ada tentor'}</div>
         <div class="student-meta"><i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px"></i> ${s.pertemuan} pertemuan</div>
         <div class="badge"><i class="ti ti-clipboard-check" style="font-size:11px"></i> ${filled} terisi</div>
       `;
@@ -332,7 +330,7 @@
     av.style.cssText = `background:${color.bg};color:${color.text};width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex-shrink:0`;
 
     document.getElementById('detail-name').textContent = s.nama;
-    document.getElementById('detail-kelas').textContent = `${s.kelas || '—'} · ${s.pertemuan} pertemuan`;
+    document.getElementById('detail-kelas').textContent = `${s.kelas || '—'} · Tentor: ${s.tentor || '—'} · ${s.pertemuan} pertemuan`;
     document.getElementById('topbar-title').textContent = `Detail: ${s.nama}`;
     document.getElementById('topbar-sub').textContent = 'Dokumentasi & evaluasi per pertemuan';
     document.getElementById('topbar-actions').innerHTML = '';
@@ -461,12 +459,13 @@
     // Info siswa
     doc.setTextColor(30, 30, 30);
     doc.setFillColor(239, 246, 255);
-    doc.rect(margin, y, W - 2 * margin, 20, 'F');
+    doc.rect(margin, y, W - 2 * margin, 26, 'F');
     doc.setFontSize(13); doc.setFont(undefined, 'bold');
     doc.text(s.nama, margin + 6, y + 8);
     doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text(`Kelas/Program: ${s.kelas || '—'}`, margin + 6, y + 15);
-    y += 28;
+    doc.text(`Kelas/Program: ${s.kelas || '—'}`, margin + 6, y + 16);
+    doc.text(`Tentor: ${s.tentor || '—'}`, margin + 6, y + 22);
+    y += 34;
 
     // Pertemuan
     for (let i = 1; i <= s.pertemuan; i++) {
@@ -538,15 +537,17 @@
     document.getElementById('add-modal').style.display = 'none';
     document.getElementById('input-nama').value = '';
     document.getElementById('input-kelas').value = '';
+    document.getElementById('input-tentor').value = '';
     document.getElementById('input-pertemuan').value = '20';
   }
 
   function addStudent() {
     const nama = document.getElementById('input-nama').value.trim();
     const kelas = document.getElementById('input-kelas').value;
+    const tentor = document.getElementById('input-tentor').value.trim();
     const pertemuan = parseInt(document.getElementById('input-pertemuan').value);
     if (!nama) { showToast('Nama siswa wajib diisi!'); return; }
-    students.push({ id: Date.now().toString(), nama, kelas, pertemuan });
+    students.push({ id: Date.now().toString(), nama, kelas, tentor, pertemuan });
     saveToStorage();
     closeModal();
     renderStudents();
